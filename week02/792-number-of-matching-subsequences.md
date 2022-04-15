@@ -11,54 +11,44 @@
 
 #### Complexity
 
-**Time:** `O(M * N logN)` where, M = No of Words and N = No of characters in each Word.
+**Time:** `O(M * logN)` where, M = total number of characters in all strings, N = average frequency of each character.
 
 **Space:** `O(N)`
 
 #### Code
 
 ```cpp
-int upperBound(vector<int> &arr, int target) {
-    int left = 0, right = arr.size() - 1;
+bool isSubsequence(string word, vector<vector<int>>& freq) {
+    int prevPosition = -1;
+    bool flag = true;
 
-    while (left <= right)
-    {
-        int mid = (left + right) / 2;
+    for(auto &ch : word) {
+        if(freq[ch].empty()) { flag = false; break; }
 
-        if (target >= arr[mid]) left = mid + 1;
-        else right = mid - 1;
+        int pos = upper_bound(freq[ch].begin(), freq[ch].end(), prevPosition) - freq[ch].begin();
+        if(pos >= freq[ch].size()) { flag = false; break; }
+
+        int newPosition = freq[ch][pos];
+        if(newPosition < prevPosition) { flag = false; break; }
+
+        prevPosition = newPosition;
     }
 
-    return left;
+    return flag;
 }
 
 int numMatchingSubseq(string s, vector<string>& words) {
-    vector<vector<int>> seen(257, vector<int>());
-    int matchingSubsequence = 0;
+    vector<vector<int>> freq(257, vector<int>());
+    int noSubseq = 0;
 
     for(int i = 0; i < s.size(); i++) {
-        seen[s[i]].push_back(i);
+        freq[s[i]].push_back(i);
     }
 
     for(auto &word : words) {
-        int prevPosition = -1;
-        bool flag = true;
-
-        for(auto &ch : word) {
-            if(seen[ch].empty()) { flag = false; break; }
-
-            int pos = upperBound(seen[ch], prevPosition);
-            if(pos >= seen[ch].size()) { flag = false; break; }
-
-            int newPosition = seen[ch][pos];
-            if(newPosition < prevPosition) { flag = false; break; }
-
-            prevPosition = newPosition;
-        }
-
-        if(flag) matchingSubsequence++;
+        noSubseq += isSubsequence(word, freq);
     }
 
-    return matchingSubsequence;
+    return noSubseq;
 }
 ```
